@@ -70,6 +70,9 @@ def alphabeta_full_search(state, game):
                            lambda a_s: min_value(a_s[1], -infinity, infinity))
     return action
 
+def rand_search(state, game, d=4, cutoff_test=None, eval_fn=None):
+    return  random.choice(game.legal_moves())
+
 
 def alphabeta_search(state, game, d=4, cutoff_test=None, eval_fn=None):
     """Search game to determine best action; use alpha-beta pruning.
