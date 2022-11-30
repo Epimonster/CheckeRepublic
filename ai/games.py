@@ -36,6 +36,26 @@ def minimax_decision(state, game):
                            lambda a_s: min_value(a_s[1]))
     return action
 
+def minimax(g_state, game):
+    move = None
+    player = game.to_move(g_state)
+
+    def maxTest(st):
+        maxEval = float('-inf')
+        for (_, s) in game.succesors(st):
+            evaluation = minimax(s, game)[0]
+            maxEval = max(maxEval, evaluation)
+            if maxEval == evaluation:
+                bestMove = move
+        return maxEval, bestMove
+    def minTest(st):
+        minEval = float('inf')
+        for (_, s) in game.successors(st):
+            evaluation = minimax(s, game)[0]
+            minEval = min(minEval, evaluation)
+            if minEval == evaluation:
+                bestMove = move
+        return minEval, bestMove
 
 def alphabeta_full_search(state, game):
     """Search game to determine best action; use alpha-beta pruning.
