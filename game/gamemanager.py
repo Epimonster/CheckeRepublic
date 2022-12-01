@@ -36,6 +36,8 @@ class GameManager(object):
 
     def set_controllers(self):
         if self.num_players == 0:
+            self.model.g_set_player_1_heuristic_up(0)
+            self.model.g_set_player_2_heuristic_up(1)
             self.controller1 = AlphaBetaController(model=self.model,
                                                    view=self.view,
                                                    searchtime=self.think_time,
@@ -65,6 +67,13 @@ class GameManager(object):
                                                 end_turn_event=self.turn_finished)
         self.controller1.set_before_turn_event(self.controller2.remove_highlights)
         self.controller2.set_before_turn_event(self.controller1.remove_highlights)
+
+    def g_get_player_controller(self, player):
+        if player == BLACK:
+            print("This player is black")
+            return self.controller1
+        else:
+            return self.controller2
 
     def _stop_updates(self):
         # stop alphabeta threads from making any moves

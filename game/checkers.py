@@ -6,7 +6,7 @@ from util.globalconst import BLACK_KING, WHITE_KING, FREE, OCCUPIED_CHAR, FREE_C
 from util.globalconst import COLORS, TYPES, TURN, CRAMP, BRV, KEV, KCV, MEV, MCV
 from util.globalconst import INTACT_DOUBLE_CORNER, ENDGAME, OPENING, MIDGAME
 from util.globalconst import create_grid_map, KING_IDX, BLACK_IDX, WHITE_IDX
-
+import random
 
 class Checkerboard(object):
     #   (white)
@@ -33,6 +33,9 @@ class Checkerboard(object):
     rank = {0: 0, 1: -1, 2: 1, 3: 0, 4: 1, 5: 1, 6: 2, 7: 1, 8: 1, 9: 0,
             10: 7, 11: 4, 12: 2, 13: 2, 14: 9, 15: 8}
 
+    ##Global variables to control which heuristic to select for each
+
+
     def __init__(self):
         self.squares = [OCCUPIED for _ in range(56)]
         s = self.squares
@@ -53,6 +56,18 @@ class Checkerboard(object):
         self.black_total = 12
         self.grid_map = create_grid_map()
         self.ok_to_move = True
+
+        ##GARETH CODE STARTS HERE, SET THESE TO BE THE HEURISTIC "MODES" WILL ALSO LATER BE USED FOR MAPPING OBJECTS
+        ##TODO: IMPLEMENT HEURISTIC OBJECT CONTAINING A FUNCTION AND TOSTRING
+        self.gplayer1state = 0
+        self.gplayer2state = 0
+
+    def g_set_player_1_heuristic(self, num):
+        self.gplayer1state = num
+
+    def g_set_player_2_heuristic(self, num):
+        self.gplayer2state = num
+
 
     def __repr__(self):
         bc = self.count(BLACK)
@@ -202,6 +217,7 @@ class Checkerboard(object):
         self.redo_list = []
 
     def utility(self, player):
+        print("Got to Super")
         """ Player evaluation function """
         sq = self.squares
         code = sum(self.value[s] for s in sq)
@@ -516,10 +532,40 @@ class Checkerboard(object):
         return evaluation
 
 
+class GCheckerboard(Checkerboard):
+    def __init__(self):
+        super().__init__()
+
+    def utility(self, player):
+        print("Overrode")
+        selectedheuristic = 0
+
+        ##using player numbers we can bind things peoper in here
+        if player == BLACK:
+            selectedheuristic = self.gplayer1state
+            print("BLACK")
+        else:
+            selectedheuristic = self.gplayer2state
+            print("WHITE")
+
+        if selectedheuristic == 0:
+            print("Selected Base")
+            return super().utility(player)
+        else:
+            print("Selected Random")
+            return random.randint(0,1000)
+
 class Checkers(games.Game):
     def __init__(self):
         games.Game.__init__(self)
-        self.curr_state = Checkerboard()
+        self.curr_state = GCheckerboard()
+
+    def g_set_player_1_heuristic_up(self, num):
+        self.curr_state.g_set_player_1_heuristic(num)
+
+    def g_set_player_2_heuristic_up(self, num):
+        self.curr_state.g_set_player_2_heuristic(num)
+    
 
     def captures_available(self, curr_state=None):
         state = curr_state or self.curr_state

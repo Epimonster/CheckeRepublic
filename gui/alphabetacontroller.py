@@ -19,6 +19,10 @@ class AlphaBetaController(Controller):
         self.process = multiprocessing.Process()
         self._start_time = None
         self._call_id = 0
+        self.type = 0
+
+    def goofy_ah_ah_debug_function(self):
+        print("got here")
 
     def set_before_turn_event(self, evt):
         self._before_turn_event = evt
