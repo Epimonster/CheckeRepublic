@@ -1,4 +1,5 @@
 import os
+import random
 from tkinter import Label, SUNKEN, NW
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 from tkinter.messagebox import askyesnocancel, showerror, showinfo
@@ -33,11 +34,12 @@ class GameManager(object):
         # noinspection PyUnresolvedReferences
         self.controller1.start_turn()
         self.filepath = None
+        self.g_move_count = 0
 
     def set_controllers(self):
         if self.num_players == 0:
-            self.model.g_set_player_1_heuristic_up(0)
-            self.model.g_set_player_2_heuristic_up(1)
+            self.model.g_set_player_1_heuristic_up(2)
+            self.model.g_set_player_2_heuristic_up(3)
             self.controller1 = AlphaBetaController(model=self.model,
                                                    view=self.view,
                                                    searchtime=self.think_time,
@@ -259,12 +261,17 @@ class GameManager(object):
             showerror(PROGRAM_TITLE, 'Could not save file.')
 
     def turn_finished(self):
+        self.g_move_count+=1
+        self.model.g_update_round_seed(random.random())
+        print("Move: " + str(self.g_move_count))
         if self.model.curr_state.to_move == BLACK:
+            print("Ending whites turn")
             self.controller2.end_turn()  # end White's turn
             self._root.update()
             self.view.update_statusbar()
             self.controller1.start_turn()  # begin Black's turn
         else:
+            print("Ending blacks turn")
             self.controller1.end_turn()  # end Black's turn
             self._root.update()
             self.view.update_statusbar()

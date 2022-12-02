@@ -1,3 +1,4 @@
+import math
 import ai.games as games
 import time
 from base.move import Move
@@ -33,7 +34,6 @@ class Checkerboard(object):
     rank = {0: 0, 1: -1, 2: 1, 3: 0, 4: 1, 5: 1, 6: 2, 7: 1, 8: 1, 9: 0,
             10: 7, 11: 4, 12: 2, 13: 2, 14: 9, 15: 8}
 
-    ##Global variables to control which heuristic to select for each
 
 
     def __init__(self):
@@ -217,7 +217,6 @@ class Checkerboard(object):
         self.redo_list = []
 
     def utility(self, player):
-        print("Got to Super")
         """ Player evaluation function """
         sq = self.squares
         code = sum(self.value[s] for s in sq)
@@ -244,10 +243,13 @@ class Checkerboard(object):
             evaluation -= TURN
             multiplier = 1
 
-        return multiplier * (evaluation + self._eval_cramp(sq) + self._eval_back_rank_guard(sq) +
+        multiplier *=  (evaluation + self._eval_cramp(sq) + self._eval_back_rank_guard(sq) +
                              self._eval_double_corner(sq) + self._eval_center(sq) + self._eval_edge(sq) +
                              self._eval_tempo(sq, nm, nbk, nbm, nwk, nwm) +
                              self._eval_player_opposition(sq, nwm, nwk, nbk, nbm, nm, nk))
+        print("Based Utility: ", str(multiplier))
+        return multiplier
+
 
     def _extend_capture(self, valid_moves, captures, add_sq_func, visited):
         player = self.to_move
@@ -535,30 +537,73 @@ class Checkerboard(object):
 class GCheckerboard(Checkerboard):
     def __init__(self):
         super().__init__()
+        self.turnseed = 0
+
+    def g_update_turn_seed(self, seed):
+        self.turnseed = seed
+
+        
+
 
     def utility(self, player):
-        print("Overrode")
+        ##print("Overrode")
         selectedheuristic = 0
 
         ##using player numbers we can bind things peoper in here
         if player == BLACK:
             selectedheuristic = self.gplayer1state
-            print("BLACK")
         else:
             selectedheuristic = self.gplayer2state
-            print("WHITE")
 
         if selectedheuristic == 0:
             print("Selected Base")
             return super().utility(player)
-        else:
+        elif selectedheuristic == 1:
             print("Selected Random")
             return random.randint(0,1000)
+        elif selectedheuristic == 2:
+            #print("Selected Distance Closer [Agressive]")
+            return self.play_agressive(player)
+        elif selectedheuristic ==3:
+            if self.turnseed > 0.9:
+                #print("Occasionally Random Random Strike.")
+                return random.randint(0,1000)
+            else:
+                #print("Occasionally Random Clocking In.")
+                return super().utility(player)
+            
+
+    def play_agressive(self, player):
+        row_difference_sum = 0
+        if player == WHITE:
+            for piece in self.white_pieces:
+                white_row = math.floor(piece[0]/5)
+                ## go go gadget on^2 complexity
+                for piece in self.black_pieces:
+                    black_row = math.floor(piece[0]/5)
+                    row_difference_sum -= abs(white_row-black_row)*abs(white_row-black_row)
+        elif player == BLACK:
+            for piece in self.black_pieces:
+                black_row = math.floor(piece[0]/5)
+                for piece in self.white_pieces:
+                    white_row = math.floor(piece[0]/5)
+                    row_difference_sum -= abs(white_row-black_row)*abs(white_row-black_row)
+        else:
+            print("Federal Issue")
+
+        #print("amount white piece: ", self.white_total)
+        print("Rowdiff ", str(row_difference_sum))
+        return row_difference_sum
+        ##distance to pieces directly in front of you unless your a king then its all. lesser extent distance to the end of the board
+        
 
 class Checkers(games.Game):
     def __init__(self):
         games.Game.__init__(self)
         self.curr_state = GCheckerboard()
+
+    def g_update_round_seed(self, seed):
+        self.curr_state.g_update_turn_seed(seed)
 
     def g_set_player_1_heuristic_up(self, num):
         self.curr_state.g_set_player_1_heuristic(num)
