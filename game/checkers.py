@@ -542,9 +542,6 @@ class GCheckerboard(Checkerboard):
     def g_update_turn_seed(self, seed):
         self.turnseed = seed
 
-        
-
-
     def utility(self, player):
         ##print("Overrode")
         selectedheuristic = 0
@@ -564,16 +561,44 @@ class GCheckerboard(Checkerboard):
         elif selectedheuristic == 2:
             #print("Selected Distance Closer [Agressive]")
             return self.play_agressive(player)
-        elif selectedheuristic ==3:
+        elif selectedheuristic == 3:
+            #print("Selected Distance Closer [Agressive]")
+            return self.play_passive(player)
+        elif selectedheuristic == 4:
             if self.turnseed > 0.9:
                 #print("Occasionally Random Random Strike.")
                 return random.randint(0,1000)
             else:
                 #print("Occasionally Random Clocking In.")
                 return super().utility(player)
+        elif selectedheuristic == 5:
+            print("Piece Value Agressive Heuristic")
+            sq = self.squares
+            code = sum(self.value[s] for s in sq)
+            nwm = code % 16
+            nwk = (code >> 4) % 16
+            nbm = (code >> 8) % 16
+            nbk = (code >> 12) % 16
+            black_total = 1 * nbm + 2 * nbk
+            white_total = 1 * nwm + 2 * nwk
+            if player == WHITE:
+                player_total = white_total
+                opponent_total = black_total
+            elif player == BLACK:
+                player_total = black_total
+                opponent_total = white_total
+            else:
+                print("Federal Issue")
+                return -1
+            if(player_total > opponent_total):
+                return self.play_agressive(player)
+            else:
+                return self.play_passive(player)
+            
             
 
     def play_agressive(self, player):
+        self.update_piece_count()
         row_difference_sum = 0
         if player == WHITE:
             for piece in self.white_pieces:
@@ -595,6 +620,10 @@ class GCheckerboard(Checkerboard):
         print("Rowdiff ", str(row_difference_sum))
         return row_difference_sum
         ##distance to pieces directly in front of you unless your a king then its all. lesser extent distance to the end of the board
+
+    def play_passive(self, player):
+        return -1 * self.play_agressive(player)
+
         
 
 class Checkers(games.Game):
