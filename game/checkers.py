@@ -594,6 +594,30 @@ class GCheckerboard(Checkerboard):
                 return self.play_agressive(player)
             else:
                 return self.play_passive(player)
+        elif selectedheuristic == 6:
+            print("Piece Value Passive Heuristic")
+            sq = self.squares
+            code = sum(self.value[s] for s in sq)
+            nwm = code % 16
+            nwk = (code >> 4) % 16
+            nbm = (code >> 8) % 16
+            nbk = (code >> 12) % 16
+            black_total = 1 * nbm + 2 * nbk
+            white_total = 1 * nwm + 2 * nwk
+            if player == WHITE:
+                player_total = white_total
+                opponent_total = black_total
+            elif player == BLACK:
+                player_total = black_total
+                opponent_total = white_total
+            else:
+                print("Federal Issue")
+                return -1
+            if(player_total > opponent_total):
+                return self.play_passive(player)
+            else:
+                return self.play_agressive(player)
+            
             
             
 

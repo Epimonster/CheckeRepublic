@@ -38,8 +38,8 @@ class GameManager(object):
 
     def set_controllers(self):
         if self.num_players == 0:
-            self.model.g_set_player_1_heuristic_up(5)
-            self.model.g_set_player_2_heuristic_up(5)
+            self.model.g_set_player_1_heuristic_up(6)
+            self.model.g_set_player_2_heuristic_up(0)
             self.controller1 = AlphaBetaController(model=self.model,
                                                    view=self.view,
                                                    searchtime=self.think_time,
